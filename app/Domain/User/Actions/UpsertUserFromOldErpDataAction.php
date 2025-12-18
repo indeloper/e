@@ -29,6 +29,7 @@ class UpsertUserFromOldErpDataAction
                 'is_blocked' => $userData->is_blocked,
                 'is_super_admin' => $userData->is_super_admin,
                 'last_synced_at' => now(),
+                'email_verified_at' => now(),
             ]
         );
     }
