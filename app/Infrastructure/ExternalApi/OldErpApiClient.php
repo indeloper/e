@@ -28,7 +28,12 @@ class OldErpApiClient
     {
         try {
             $http = Http::timeout($this->timeout)
-                ->withHeaders($this->getAuthHeaders());
+                ->withHeaders($this->getAuthHeaders())
+                ->withOptions([
+                    'curl' => [
+                        CURLOPT_IPRESOLVE => CURL_IPRESOLVE_V4,
+                    ],
+                ]);
 
             $verifySSL = config('services.old_erp.verify_ssl', true);
             if (app()->environment('local') || $verifySSL === false) {
