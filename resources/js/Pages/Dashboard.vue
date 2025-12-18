@@ -1,66 +1,122 @@
 <script setup lang="ts">
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
-import { Head, useForm } from '@inertiajs/vue3';
-import { ref, onMounted } from 'vue';
+import { Head } from '@inertiajs/vue3';
+import DataTable from 'primevue/datatable';
+import Column from 'primevue/column';
+import Tag from 'primevue/tag';
+import InputText from 'primevue/inputtext';
 import Button from 'primevue/button';
-import Card from 'primevue/card';
-import Message from 'primevue/message';
+import { ref } from 'vue';
 
-const messages = ref<string[]>([]);
-const form = useForm({});
+const props = defineProps<{
+    users: Array<any>;
+}>();
 
-onMounted(() => {
-    (window as any).Echo.channel('demo-channel')
-        .listen('.Domain\\Shared\\Events\\DemoEvent', (e: any) => {
-            messages.value.unshift(e.message);
-        });
+const filters = ref({
+    global: { value: null, matchMode: 'contains' },
 });
-
-const triggerEvent = () => {
-    form.post(route('trigger.event'), {
-        preserveScroll: true
-    });
-};
 </script>
 
 <template>
-    <Head title="Dashboard" />
+    <Head title="Список пользователей" />
 
     <AuthenticatedLayout>
         <template #header>
-            <h2 class="text-xl font-semibold leading-tight text-gray-800">
-                Dashboard & Real-time Demo
-            </h2>
+            Пользователи
         </template>
 
-        <div class="py-12">
-            <div class="mx-auto max-w-7xl sm:px-6 lg:px-8 space-y-6">
-                <Card>
-                    <template #title>
-                        PrimeVue + Laravel Reverb
-                    </template>
-                    <template #content>
-                        <div class="flex flex-col items-center gap-4">
-                            <p class="text-gray-600">
-                                Нажмите кнопку ниже, чтобы отправить событие через сокеты.
-                            </p>
-                            <Button 
-                                label="Отправить событие" 
-                                icon="pi pi-send" 
-                                @click="triggerEvent"
-                                :loading="form.processing"
-                            />
-                        </div>
-                    </template>
-                </Card>
-
-                <div v-if="messages.length > 0" class="space-y-2">
-                    <h3 class="font-medium text-lg text-gray-700">Последние сообщения из сокета:</h3>
-                    <div v-for="(msg, index) in messages" :key="index">
-                        <Message severity="success">{{ msg }}</Message>
-                    </div>
+        <div class="flex-1 flex flex-col min-h-0">
+            <!-- Table Toolbar -->
+            <div class="p-4 border-b border-gray-100 flex justify-between items-center gap-4 bg-gray-50/50">
+                <div class="flex items-center gap-3">
+                    <span class="relative">
+                        <i class="pi pi-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                        <InputText
+                            v-model="filters['global'].value"
+                            placeholder="Поиск..."
+                            class="pl-10 h-10 w-64 border-gray-200"
+                        />
+                    </span>
                 </div>
+                <div class="flex items-center gap-2">
+                    <Button icon="pi pi-refresh" severity="secondary" rounded text />
+                    <Button label="Экспорт" icon="pi pi-download" severity="secondary" outlined size="small" />
+                    <Button label="Добавить" icon="pi pi-plus" size="small" />
+                </div>
+            </div>
+
+            <!-- Table -->
+            <div class="flex-1 overflow-auto">
+                <DataTable
+                    :value="users"
+                    :filters="filters"
+                    dataKey="id"
+                    stripedRows
+                    scrollable
+                    scrollHeight="flex"
+                    class="p-datatable-sm"
+                    :pt="{
+                        thead: { class: 'bg-gray-50' },
+                        headerRow: { class: 'text-xs uppercase tracking-wider text-gray-500 font-semibold' }
+                    }"
+                >
+                    <Column field="id" header="ID" sortable style="width: 80px" class="font-mono text-xs text-gray-500" />
+                    <Column header="ФИО" sortable field="name">
+                        <template #body="{ data }">
+                            <div class="flex items-center gap-3">
+                                <div class="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-xs font-bold text-gray-600">
+                                    {{ data.name.substring(0, 2).toUpperCase() }}
+                                </div>
+                                <span class="font-medium text-gray-900">{{ data.name }}</span>
+                            </div>
+                        </template>
+                    </Column>
+                    <Column field="email" header="Email" sortable />
+                    <Column field="is_active" header="Активен" sortable style="width: 120px">
+                        <template #body="{ data }">
+                            <Tag
+                                :value="data.is_active ? 'Да' : 'Нет'"
+                                :severity="data.is_active ? 'success' : 'danger'"
+                                rounded
+                                class="px-3"
+                            />
+                        </template>
+                    </Column>
+                    <Column field="last_synced_at" header="Синхронизирован" sortable>
+                        <template #body="{ data }">
+                            <span class="text-sm text-gray-500">
+                                {{ data.last_synced_at ? new Date(data.last_synced_at).toLocaleString('ru-RU') : 'Никогда' }}
+                            </span>
+                        </template>
+                    </Column>
+                    <Column header="Действия" style="width: 100px" align-frozen="right" frozen>
+                        <template #body>
+                            <div class="flex items-center gap-1">
+                                <Button icon="pi pi-pencil" severity="secondary" text rounded size="small" />
+                                <Button icon="pi pi-trash" severity="danger" text rounded size="small" />
+                            </div>
+                        </template>
+                    </Column>
+                </DataTable>
             </div>
         </div>
     </AuthenticatedLayout>
 </template>
+
+<style>
+/* Стили для таблицы в стиле Tailwind */
+.p-datatable .p-datatable-thead > tr > th {
+    background: transparent;
+    border-bottom: 1px solid #f3f4f6;
+    padding: 1rem;
+}
+
+.p-datatable .p-datatable-tbody > tr > td {
+    padding: 1rem;
+    border-bottom: 1px solid #f3f4f6;
+}
+
+.p-datatable.p-datatable-striped .p-datatable-tbody > tr:nth-child(even) {
+    background: #f9fafb;
+}
+</style>

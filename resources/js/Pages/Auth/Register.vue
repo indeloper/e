@@ -1,10 +1,9 @@
 <script setup lang="ts">
 import GuestLayout from '@/Layouts/GuestLayout.vue';
-import InputError from '@/Components/InputError.vue';
-import InputLabel from '@/Components/InputLabel.vue';
-import PrimaryButton from '@/Components/PrimaryButton.vue';
-import TextInput from '@/Components/TextInput.vue';
 import { Head, Link, useForm } from '@inertiajs/vue3';
+import InputText from 'primevue/inputtext';
+import Password from 'primevue/password';
+import Button from 'primevue/button';
 
 const form = useForm({
     name: '',
@@ -24,92 +23,101 @@ const submit = () => {
 
 <template>
     <GuestLayout>
-        <Head title="Register" />
+        <Head title="Регистрация" />
 
-        <form @submit.prevent="submit">
-            <div>
-                <InputLabel for="name" value="Name" />
-
-                <TextInput
-                    id="name"
-                    type="text"
-                    class="mt-1 block w-full"
-                    v-model="form.name"
-                    required
-                    autofocus
-                    autocomplete="name"
-                />
-
-                <InputError class="mt-2" :message="form.errors.name" />
+        <form @submit.prevent="submit" class="space-y-6">
+            <div class="space-y-1">
+                <label for="name" class="text-sm font-medium text-gray-700 ml-1">Имя</label>
+                <div class="relative">
+                    <i class="pi pi-user absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 z-10" />
+                    <InputText
+                        id="name"
+                        v-model="form.name"
+                        type="text"
+                        class="w-full pl-10 h-12 rounded-xl border-gray-200 focus:ring-2 focus:ring-[#041E42]/20"
+                        placeholder="Александр Иванов"
+                        required
+                        autofocus
+                        autocomplete="name"
+                        :invalid="!!form.errors.name"
+                    />
+                </div>
+                <small v-if="form.errors.name" class="text-red-500 text-xs ml-1">{{ form.errors.name }}</small>
             </div>
 
-            <div class="mt-4">
-                <InputLabel for="email" value="Email" />
-
-                <TextInput
-                    id="email"
-                    type="email"
-                    class="mt-1 block w-full"
-                    v-model="form.email"
-                    required
-                    autocomplete="username"
-                />
-
-                <InputError class="mt-2" :message="form.errors.email" />
+            <div class="space-y-1">
+                <label for="email" class="text-sm font-medium text-gray-700 ml-1">Email</label>
+                <div class="relative">
+                    <i class="pi pi-envelope absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 z-10" />
+                    <InputText
+                        id="email"
+                        v-model="form.email"
+                        type="email"
+                        class="w-full pl-10 h-12 rounded-xl border-gray-200 focus:ring-2 focus:ring-[#041E42]/20"
+                        placeholder="example@mail.com"
+                        required
+                        autocomplete="username"
+                        :invalid="!!form.errors.email"
+                    />
+                </div>
+                <small v-if="form.errors.email" class="text-red-500 text-xs ml-1">{{ form.errors.email }}</small>
             </div>
 
-            <div class="mt-4">
-                <InputLabel for="password" value="Password" />
-
-                <TextInput
+            <div class="space-y-1">
+                <label for="password" class="text-sm font-medium text-gray-700 ml-1">Пароль</label>
+                <Password
                     id="password"
-                    type="password"
-                    class="mt-1 block w-full"
                     v-model="form.password"
+                    :feedback="true"
+                    toggleMask
+                    class="w-full"
+                    inputClass="w-full h-12 rounded-xl border-gray-200 focus:ring-2 focus:ring-[#041E42]/20"
+                    placeholder="••••••••"
                     required
                     autocomplete="new-password"
+                    :invalid="!!form.errors.password"
                 />
-
-                <InputError class="mt-2" :message="form.errors.password" />
+                <small v-if="form.errors.password" class="text-red-500 text-xs ml-1">{{ form.errors.password }}</small>
             </div>
 
-            <div class="mt-4">
-                <InputLabel
-                    for="password_confirmation"
-                    value="Confirm Password"
-                />
-
-                <TextInput
+            <div class="space-y-1">
+                <label for="password_confirmation" class="text-sm font-medium text-gray-700 ml-1">Подтверждение пароля</label>
+                <Password
                     id="password_confirmation"
-                    type="password"
-                    class="mt-1 block w-full"
                     v-model="form.password_confirmation"
+                    :feedback="false"
+                    toggleMask
+                    class="w-full"
+                    inputClass="w-full h-12 rounded-xl border-gray-200 focus:ring-2 focus:ring-[#041E42]/20"
+                    placeholder="••••••••"
                     required
                     autocomplete="new-password"
+                    :invalid="!!form.errors.password_confirmation"
                 />
-
-                <InputError
-                    class="mt-2"
-                    :message="form.errors.password_confirmation"
-                />
+                <small v-if="form.errors.password_confirmation" class="text-red-500 text-xs ml-1">{{ form.errors.password_confirmation }}</small>
             </div>
 
-            <div class="mt-4 flex items-center justify-end">
+            <div class="flex items-center justify-between">
                 <Link
                     :href="route('login')"
-                    class="rounded-md text-sm text-gray-600 underline hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+                    class="text-sm text-[#041E42] font-medium hover:underline"
                 >
-                    Already registered?
+                    Уже зарегистрированы?
                 </Link>
-
-                <PrimaryButton
-                    class="ms-4"
-                    :class="{ 'opacity-25': form.processing }"
-                    :disabled="form.processing"
-                >
-                    Register
-                </PrimaryButton>
             </div>
+
+            <Button
+                type="submit"
+                label="Создать аккаунт"
+                class="w-full h-12 rounded-xl bg-[#041E42] border-none text-white font-bold text-lg hover:bg-[#062c5f] transition-colors"
+                :loading="form.processing"
+            />
         </form>
     </GuestLayout>
 </template>
+
+<style>
+.p-password input {
+    width: 100% !important;
+}
+</style>

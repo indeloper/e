@@ -1,8 +1,9 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import GuestLayout from '@/Layouts/GuestLayout.vue';
-import PrimaryButton from '@/Components/PrimaryButton.vue';
 import { Head, Link, useForm } from '@inertiajs/vue3';
+import Button from 'primevue/button';
+import Message from 'primevue/message';
 
 const props = defineProps<{
     status?: string;
@@ -21,38 +22,33 @@ const verificationLinkSent = computed(
 
 <template>
     <GuestLayout>
-        <Head title="Email Verification" />
+        <Head title="Подтверждение Email" />
 
-        <div class="mb-4 text-sm text-gray-600">
-            Thanks for signing up! Before getting started, could you verify your
-            email address by clicking on the link we just emailed to you? If you
-            didn't receive the email, we will gladly send you another.
+        <div class="mb-6 text-sm text-gray-600 leading-relaxed">
+            Спасибо за регистрацию! Прежде чем начать, пожалуйста, подтвердите свой адрес электронной почты, нажав на ссылку, которую мы только что отправили вам. Если вы не получили письмо, мы с радостью отправим вам другое.
         </div>
 
-        <div
-            class="mb-4 text-sm font-medium text-green-600"
-            v-if="verificationLinkSent"
-        >
-            A new verification link has been sent to the email address you
-            provided during registration.
-        </div>
+        <Message v-if="verificationLinkSent" severity="success" class="mb-6">
+            Новая ссылка для подтверждения была отправлена на адрес электронной почты, который вы указали при регистрации.
+        </Message>
 
-        <form @submit.prevent="submit">
-            <div class="mt-4 flex items-center justify-between">
-                <PrimaryButton
-                    :class="{ 'opacity-25': form.processing }"
-                    :disabled="form.processing"
-                >
-                    Resend Verification Email
-                </PrimaryButton>
+        <form @submit.prevent="submit" class="space-y-6">
+            <Button
+                type="submit"
+                label="Отправить письмо повторно"
+                class="w-full h-12 rounded-xl bg-[#041E42] border-none text-white font-bold"
+                :loading="form.processing"
+            />
 
+            <div class="flex items-center justify-center">
                 <Link
                     :href="route('logout')"
                     method="post"
                     as="button"
-                    class="rounded-md text-sm text-gray-600 underline hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
-                    >Log Out</Link
+                    class="text-sm text-gray-500 hover:text-gray-700 underline font-medium"
                 >
+                    Выйти
+                </Link>
             </div>
         </form>
     </GuestLayout>

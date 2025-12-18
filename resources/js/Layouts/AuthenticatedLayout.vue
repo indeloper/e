@@ -1,198 +1,223 @@
 <script setup lang="ts">
-import { ref } from 'vue';
-import ApplicationLogo from '@/Components/ApplicationLogo.vue';
-import Dropdown from '@/Components/Dropdown.vue';
-import DropdownLink from '@/Components/DropdownLink.vue';
-import NavLink from '@/Components/NavLink.vue';
-import ResponsiveNavLink from '@/Components/ResponsiveNavLink.vue';
-import { Link } from '@inertiajs/vue3';
+import { ref, computed, onMounted, onUnmounted } from 'vue';
+import { Link, router, usePage } from '@inertiajs/vue3';
+import { useToast } from 'primevue/usetoast';
+import Toast from 'primevue/toast';
+import Button from 'primevue/button';
+import InputText from 'primevue/inputtext';
+import AppLayoutNavMenu from '@/Layouts/Partials/AppLayoutNavMenu.vue';
 
-const showingNavigationDropdown = ref(false);
+const props = defineProps<{
+    noCard?: boolean;
+}>();
+
+const page = usePage();
+const user = computed(() => page.props.auth.user);
+
+const sidebarCollapsed = ref(localStorage.getItem('sidebar-collapsed') === 'true');
+const isUserMenuOpen = ref(false);
+const userMenuRef = ref<HTMLElement | null>(null);
+
+const toggleSidebar = () => {
+    sidebarCollapsed.value = !sidebarCollapsed.value;
+    localStorage.setItem('sidebar-collapsed', String(sidebarCollapsed.value));
+};
+
+const userInitials = computed(() => {
+    const name = user.value?.name || user.value?.email || '??';
+    const names = name.trim().split(' ');
+    if (names.length >= 2) {
+        return (names[0][0] + names[1][0]).toUpperCase();
+    }
+    return name.substring(0, 2).toUpperCase();
+});
+
+const logout = () => {
+    router.post(route('logout'));
+};
+
+const handleClickOutside = (event: MouseEvent) => {
+    if (userMenuRef.value && !userMenuRef.value.contains(event.target as Node)) {
+        isUserMenuOpen.value = false;
+    }
+};
+
+onMounted(() => {
+    document.addEventListener('click', handleClickOutside);
+});
+
+onUnmounted(() => {
+    document.removeEventListener('click', handleClickOutside);
+});
 </script>
 
 <template>
-    <div>
-        <div class="min-h-screen bg-gray-100">
-            <nav
-                class="border-b border-gray-100 bg-white"
-            >
-                <!-- Primary Navigation Menu -->
-                <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-                    <div class="flex h-16 justify-between">
-                        <div class="flex">
-                            <!-- Logo -->
-                            <div class="flex shrink-0 items-center">
-                                <Link :href="route('dashboard')">
-                                    <ApplicationLogo
-                                        class="block h-9 w-auto fill-current text-gray-800"
-                                    />
-                                </Link>
-                            </div>
+    <div class="h-screen w-full flex bg-slate-100/50">
+        <Toast />
 
-                            <!-- Navigation Links -->
-                            <div
-                                class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex"
-                            >
-                                <NavLink
-                                    :href="route('dashboard')"
-                                    :active="route().current('dashboard')"
-                                >
-                                    Dashboard
-                                </NavLink>
-                            </div>
-                        </div>
-
-                        <div class="hidden sm:ms-6 sm:flex sm:items-center">
-                            <!-- Settings Dropdown -->
-                            <div class="relative ms-3">
-                                <Dropdown align="right" width="48">
-                                    <template #trigger>
-                                        <span class="inline-flex rounded-md">
-                                            <button
-                                                type="button"
-                                                class="inline-flex items-center rounded-md border border-transparent bg-white px-3 py-2 text-sm font-medium leading-4 text-gray-500 transition duration-150 ease-in-out hover:text-gray-700 focus:outline-none"
-                                            >
-                                                {{ $page.props.auth.user.name }}
-
-                                                <svg
-                                                    class="-me-0.5 ms-2 h-4 w-4"
-                                                    xmlns="http://www.w3.org/2000/svg"
-                                                    viewBox="0 0 20 20"
-                                                    fill="currentColor"
-                                                >
-                                                    <path
-                                                        fill-rule="evenodd"
-                                                        d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
-                                                        clip-rule="evenodd"
-                                                    />
-                                                </svg>
-                                            </button>
-                                        </span>
-                                    </template>
-
-                                    <template #content>
-                                        <DropdownLink
-                                            :href="route('profile.edit')"
-                                        >
-                                            Profile
-                                        </DropdownLink>
-                                        <DropdownLink
-                                            :href="route('logout')"
-                                            method="post"
-                                            as="button"
-                                        >
-                                            Log Out
-                                        </DropdownLink>
-                                    </template>
-                                </Dropdown>
-                            </div>
-                        </div>
-
-                        <!-- Hamburger -->
-                        <div class="-me-2 flex items-center sm:hidden">
-                            <button
-                                @click="
-                                    showingNavigationDropdown =
-                                        !showingNavigationDropdown
-                                "
-                                class="inline-flex items-center justify-center rounded-md p-2 text-gray-400 transition duration-150 ease-in-out hover:bg-gray-100 hover:text-gray-500 focus:bg-gray-100 focus:text-gray-500 focus:outline-none"
-                            >
-                                <svg
-                                    class="h-6 w-6"
-                                    stroke="currentColor"
-                                    fill="none"
-                                    viewBox="0 0 24 24"
-                                >
-                                    <path
-                                        :class="{
-                                            hidden: showingNavigationDropdown,
-                                            'inline-flex':
-                                                !showingNavigationDropdown,
-                                        }"
-                                        stroke-linecap="round"
-                                        stroke-linejoin="round"
-                                        stroke-width="2"
-                                        d="M4 6h16M4 12h16M4 18h16"
-                                    />
-                                    <path
-                                        :class="{
-                                            hidden: !showingNavigationDropdown,
-                                            'inline-flex':
-                                                showingNavigationDropdown,
-                                        }"
-                                        stroke-linecap="round"
-                                        stroke-linejoin="round"
-                                        stroke-width="2"
-                                        d="M6 18L18 6M6 6l12 12"
-                                    />
-                                </svg>
-                            </button>
-                        </div>
-                    </div>
+        <!-- Sidebar -->
+        <aside
+            class="hidden md:flex flex-col shrink-0 transition-all duration-300 ease-in-out bg-[#041E42] shadow-2xl z-30"
+            :class="sidebarCollapsed ? 'w-20' : 'w-72'"
+        >
+            <!-- Logo Section -->
+            <div class="h-16 shrink-0 flex items-center px-6 gap-3">
+                <div class="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center shrink-0">
+                    <i class="pi pi-building text-white" />
                 </div>
-
-                <!-- Responsive Navigation Menu -->
-                <div
-                    :class="{
-                        block: showingNavigationDropdown,
-                        hidden: !showingNavigationDropdown,
-                    }"
-                    class="sm:hidden"
+                <Link 
+                    v-if="!sidebarCollapsed" 
+                    :href="route('dashboard')" 
+                    class="font-black text-xl text-white tracking-tighter overflow-hidden whitespace-nowrap animate-fade-in"
                 >
-                    <div class="space-y-1 pb-3 pt-2">
-                        <ResponsiveNavLink
-                            :href="route('dashboard')"
-                            :active="route().current('dashboard')"
-                        >
-                            Dashboard
-                        </ResponsiveNavLink>
+                    SK ГOРOД
+                </Link>
+            </div>
+
+            <!-- Navigation -->
+            <div class="flex-1 overflow-y-auto overflow-x-hidden px-3 py-4 custom-scrollbar">
+                <AppLayoutNavMenu :collapsed="sidebarCollapsed" />
+            </div>
+
+            <!-- Sidebar Footer -->
+            <div class="p-4 border-t border-white/5">
+                <div class="flex items-center gap-3 p-2 rounded-xl bg-white/5">
+                    <div class="w-8 h-8 rounded-lg bg-blue-500 flex items-center justify-center text-[10px] font-bold text-white shrink-0">
+                        {{ userInitials }}
                     </div>
-
-                    <!-- Responsive Settings Options -->
-                    <div
-                        class="border-t border-gray-200 pb-1 pt-4"
-                    >
-                        <div class="px-4">
-                            <div
-                                class="text-base font-medium text-gray-800"
-                            >
-                                {{ $page.props.auth.user.name }}
-                            </div>
-                            <div class="text-sm font-medium text-gray-500">
-                                {{ $page.props.auth.user.email }}
-                            </div>
-                        </div>
-
-                        <div class="mt-3 space-y-1">
-                            <ResponsiveNavLink :href="route('profile.edit')">
-                                Profile
-                            </ResponsiveNavLink>
-                            <ResponsiveNavLink
-                                :href="route('logout')"
-                                method="post"
-                                as="button"
-                            >
-                                Log Out
-                            </ResponsiveNavLink>
-                        </div>
+                    <div v-if="!sidebarCollapsed" class="min-w-0 overflow-hidden">
+                        <p class="text-[11px] font-bold text-white truncate leading-none mb-1">{{ user?.name }}</p>
+                        <p class="text-[9px] text-white/40 truncate leading-none uppercase tracking-widest">Администратор</p>
                     </div>
                 </div>
-            </nav>
+            </div>
+        </aside>
 
-            <!-- Page Heading -->
-            <header
-                class="bg-white shadow"
-                v-if="$slots.header"
-            >
-                <div class="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
-                    <slot name="header" />
+        <!-- Main Workspace -->
+        <div class="flex-1 flex flex-col min-h-0 min-w-0 overflow-hidden">
+            <!-- Glass Header -->
+            <header class="h-16 shrink-0 flex items-center px-6 gap-6 z-20 bg-white/80 backdrop-blur-xl border-b border-gray-200/50 shadow-sm">
+                <button
+                    class="flex items-center justify-center w-10 h-10 rounded-xl hover:bg-gray-100 transition-colors shrink-0"
+                    @click="toggleSidebar"
+                >
+                    <i class="pi pi-bars text-gray-500" />
+                </button>
+
+                <!-- Page Info -->
+                <div class="flex-1 min-w-0">
+                    <h2 class="text-sm font-bold text-gray-800 uppercase tracking-wider">
+                        <slot name="header" />
+                    </h2>
+                </div>
+
+                <!-- Global Actions -->
+                <div class="flex items-center gap-4">
+                    <div class="hidden md:flex relative group">
+                        <i class="pi pi-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-300 group-focus-within:text-blue-500 transition-colors" />
+                        <InputText 
+                            placeholder="Поиск по системе..." 
+                            class="pl-10 h-10 w-64 bg-gray-50 border-none rounded-xl text-sm focus:ring-2 focus:ring-blue-500/10 transition-all"
+                        />
+                    </div>
+
+                    <button class="w-10 h-10 rounded-xl bg-gray-50 flex items-center justify-center hover:bg-gray-100 transition-colors">
+                        <i class="pi pi-bell text-gray-400" />
+                    </button>
+
+                    <div ref="userMenuRef" class="relative">
+                        <button
+                            @click="isUserMenuOpen = !isUserMenuOpen"
+                            class="flex items-center gap-2 pl-1 pr-3 py-1 rounded-xl hover:bg-gray-50 transition-colors border border-transparent hover:border-gray-200"
+                        >
+                            <div class="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center text-[10px] font-bold text-white shadow-lg shadow-blue-500/20">
+                                {{ userInitials }}
+                            </div>
+                            <i class="pi pi-chevron-down text-[10px] text-gray-400" />
+                        </button>
+
+                        <Transition
+                            enter-active-class="transition ease-out duration-200"
+                            enter-from-class="transform opacity-0 scale-95 translate-y-2"
+                            enter-to-class="transform opacity-100 scale-100 translate-y-0"
+                            leave-active-class="transition ease-in duration-75"
+                            leave-from-class="transform opacity-100 scale-100 translate-y-0"
+                            leave-to-class="transform opacity-0 scale-95 translate-y-2"
+                        >
+                            <div
+                                v-if="isUserMenuOpen"
+                                class="absolute top-full right-0 mt-3 w-64 bg-white rounded-2xl shadow-2xl shadow-black/10 ring-1 ring-black/5 overflow-hidden z-50"
+                            >
+                                <div class="p-5 bg-gradient-to-br from-gray-50 to-white border-b border-gray-100">
+                                    <div class="font-bold text-gray-900 leading-tight">{{ user?.name }}</div>
+                                    <div class="text-xs text-gray-400 truncate mt-1">{{ user?.email }}</div>
+                                </div>
+                                <div class="p-2">
+                                    <Link
+                                        :href="route('profile.edit')"
+                                        class="flex items-center gap-3 px-4 py-3 text-sm text-gray-600 hover:bg-blue-50 hover:text-blue-700 rounded-xl transition-all"
+                                    >
+                                        <i class="pi pi-user text-xs opacity-60" />
+                                        <span>Личный кабинет</span>
+                                    </Link>
+                                    <button
+                                        @click="logout"
+                                        class="w-full flex items-center gap-3 px-4 py-3 text-sm text-red-600 hover:bg-red-50 rounded-xl transition-all text-left"
+                                    >
+                                        <i class="pi pi-sign-out text-xs opacity-60" />
+                                        <span>Завершить сеанс</span>
+                                    </button>
+                                </div>
+                            </div>
+                        </Transition>
+                    </div>
                 </div>
             </header>
 
-            <!-- Page Content -->
-            <main>
-                <slot />
+            <!-- Content Area -->
+            <main class="flex-1 overflow-hidden flex flex-col p-4 md:p-6 bg-slate-100/30">
+                <div 
+                    v-if="!noCard"
+                    class="flex-1 bg-white rounded-3xl shadow-xl shadow-slate-200/50 border border-white flex flex-col overflow-hidden animate-slide-up"
+                >
+                    <slot />
+                </div>
+                <div v-else class="flex-1 flex flex-col overflow-auto animate-slide-up">
+                    <slot />
+                </div>
             </main>
         </div>
     </div>
 </template>
+
+<style>
+.custom-scrollbar::-webkit-scrollbar {
+    width: 4px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 20px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+@keyframes fade-in {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+.animate-fade-in {
+    animation: fade-in 0.3s ease-out forwards;
+}
+
+@keyframes slide-up {
+    from { transform: translateY(10px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
+.animate-slide-up {
+    animation: slide-up 0.4s cubic-bezier(0, 0, 0.2, 1) forwards;
+}
+</style>

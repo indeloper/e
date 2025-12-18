@@ -6,7 +6,10 @@ import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
 import { createApp, DefineComponent, h } from 'vue';
 import { ZiggyVue } from '../../vendor/tightenco/ziggy';
 import PrimeVue from 'primevue/config';
-import Aura from '@primevue/themes/aura';
+import { CustomPreset, ruLocale } from './Config/primevue';
+import ConfirmationService from 'primevue/confirmationservice';
+import ToastService from 'primevue/toastservice';
+import Tooltip from 'primevue/tooltip';
 
 const appName = import.meta.env.VITE_APP_NAME || 'Laravel';
 
@@ -23,14 +26,18 @@ createInertiaApp({
             .use(ZiggyVue)
             .use(PrimeVue, {
                 theme: {
-                    preset: Aura,
+                    preset: CustomPreset,
                     options: {
                         prefix: 'p',
                         darkModeSelector: '.dark',
                         cssLayer: false
                     }
-                }
+                },
+                locale: ruLocale
             })
+            .use(ConfirmationService)
+            .use(ToastService)
+            .directive('tooltip', Tooltip)
             .mount(el);
     },
     progress: {

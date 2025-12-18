@@ -1,10 +1,9 @@
 <script setup lang="ts">
 import GuestLayout from '@/Layouts/GuestLayout.vue';
-import InputError from '@/Components/InputError.vue';
-import InputLabel from '@/Components/InputLabel.vue';
-import PrimaryButton from '@/Components/PrimaryButton.vue';
-import TextInput from '@/Components/TextInput.vue';
 import { Head, useForm } from '@inertiajs/vue3';
+import InputText from 'primevue/inputtext';
+import Password from 'primevue/password';
+import Button from 'primevue/button';
 
 const props = defineProps<{
     email: string;
@@ -29,69 +28,66 @@ const submit = () => {
 
 <template>
     <GuestLayout>
-        <Head title="Reset Password" />
+        <Head title="Сброс пароля" />
 
-        <form @submit.prevent="submit">
-            <div>
-                <InputLabel for="email" value="Email" />
-
-                <TextInput
+        <form @submit.prevent="submit" class="space-y-6">
+            <div class="space-y-1">
+                <label for="email" class="text-sm font-medium text-gray-700 ml-1">Email</label>
+                <InputText
                     id="email"
                     type="email"
-                    class="mt-1 block w-full"
+                    class="w-full h-12 rounded-xl border-gray-200"
                     v-model="form.email"
                     required
-                    autofocus
                     autocomplete="username"
                 />
-
-                <InputError class="mt-2" :message="form.errors.email" />
+                <small v-if="form.errors.email" class="text-red-500 text-xs ml-1">{{ form.errors.email }}</small>
             </div>
 
-            <div class="mt-4">
-                <InputLabel for="password" value="Password" />
-
-                <TextInput
+            <div class="space-y-1">
+                <label for="password" class="text-sm font-medium text-gray-700 ml-1">Новый пароль</label>
+                <Password
                     id="password"
-                    type="password"
-                    class="mt-1 block w-full"
                     v-model="form.password"
+                    toggleMask
+                    class="w-full"
+                    inputClass="w-full h-12 rounded-xl border-gray-200"
                     required
                     autocomplete="new-password"
+                    autofocus
+                    placeholder="••••••••"
                 />
-
-                <InputError class="mt-2" :message="form.errors.password" />
+                <small v-if="form.errors.password" class="text-red-500 text-xs ml-1">{{ form.errors.password }}</small>
             </div>
 
-            <div class="mt-4">
-                <InputLabel
-                    for="password_confirmation"
-                    value="Confirm Password"
-                />
-
-                <TextInput
+            <div class="space-y-1">
+                <label for="password_confirmation" class="text-sm font-medium text-gray-700 ml-1">Подтверждение пароля</label>
+                <Password
                     id="password_confirmation"
-                    type="password"
-                    class="mt-1 block w-full"
                     v-model="form.password_confirmation"
+                    :feedback="false"
+                    toggleMask
+                    class="w-full"
+                    inputClass="w-full h-12 rounded-xl border-gray-200"
                     required
                     autocomplete="new-password"
+                    placeholder="••••••••"
                 />
-
-                <InputError
-                    class="mt-2"
-                    :message="form.errors.password_confirmation"
-                />
+                <small v-if="form.errors.password_confirmation" class="text-red-500 text-xs ml-1">{{ form.errors.password_confirmation }}</small>
             </div>
 
-            <div class="mt-4 flex items-center justify-end">
-                <PrimaryButton
-                    :class="{ 'opacity-25': form.processing }"
-                    :disabled="form.processing"
-                >
-                    Reset Password
-                </PrimaryButton>
-            </div>
+            <Button
+                type="submit"
+                label="Сбросить пароль"
+                class="w-full h-12 rounded-xl bg-[#041E42] border-none text-white font-bold"
+                :loading="form.processing"
+            />
         </form>
     </GuestLayout>
 </template>
+
+<style>
+.p-password input {
+    width: 100% !important;
+}
+</style>
