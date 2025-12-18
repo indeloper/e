@@ -25,5 +25,14 @@ class AppServiceProvider extends ServiceProvider
 
         // Форсируем HTTPS всегда и везде
         URL::forceScheme('https');
+
+        // Добавляем логирование сессии для отладки
+        if (request()->path() === 'login' && request()->isMethod('post')) {
+            \Illuminate\Support\Facades\Log::info('Login attempt', [
+                'session_id' => session()->getId(),
+                'ip' => request()->ip(),
+                'headers' => request()->headers->all(),
+            ]);
+        }
     }
 }
