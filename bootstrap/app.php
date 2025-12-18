@@ -18,13 +18,6 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
 
         $middleware->trustProxies(at: '*');
-
-        // ГАРАНТИРОВАННЫЙ ФИКС 419: исключаем логин из проверки CSRF (только для демо)
-        $middleware->validateCsrfTokens(except: [
-            'login',
-            'register',
-            'logout'
-        ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //

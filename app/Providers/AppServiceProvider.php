@@ -23,16 +23,9 @@ class AppServiceProvider extends ServiceProvider
     {
         Vite::prefetch(concurrency: 3);
 
-        // Форсируем HTTPS всегда и везде
-        URL::forceScheme('https');
-
-        // Добавляем логирование сессии для отладки
-        if (request()->path() === 'login' && request()->isMethod('post')) {
-            \Illuminate\Support\Facades\Log::info('Login attempt', [
-                'session_id' => session()->getId(),
-                'ip' => request()->ip(),
-                'headers' => request()->headers->all(),
-            ]);
+        // Форсируем HTTPS только в продакшене
+        if (config('app.env') === 'production') {
+            URL::forceScheme('https');
         }
     }
 }
